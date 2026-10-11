@@ -9,7 +9,7 @@ count per level, and takes nothing else. **A side pane** does the work:
 - every event of the account, newest first, with its level, project, source and age
 - **⤴ Ask** drops an event into the prompt box, unsent, so a failed deploy
   becomes the next thing you ask about
-- the title opens the event's page in Alarum; **↗ Link** opens whatever the
+- the title opens the event's page in Alarum; **⇗ Link** opens whatever the
   sender attached
 - **▾** unfolds what the event carries: its message, its fields as a grid, its tags
 - **✓ / ✗** marks one read, **✓ Mark all** the whole scope, both reflected in

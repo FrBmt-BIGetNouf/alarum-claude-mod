@@ -494,8 +494,6 @@ async function draw(
   const tight = isTerminal && opts.columns < (opts.isPane ? TIGHT_PANE : TIGHT)
   const glyph = (g: string) => (isTerminal ? `[${g}]` : g)
   const chip = narrow ? true : undefined
-  const chipRow = tight ? true : undefined
-  const name = (long: string, g: string) => (tight ? glyph(g) : long)
 
   const where = await read($, scope)
   // The window held is account-wide, shared with the other sessions: the scope
@@ -747,12 +745,20 @@ async function draw(
               ? <Button key={`title:${row.id}`} label={row.title} plain onPress={() => openPage($, row.webUrl ?? '')}>{title}</Button>
               : title}
           </Box>
-          <Box gap={tight ? 0 : 1} flexShrink={0}>
-            {row.url ? <Button key={`link:${row.id}`} label={name('↗ Link', '↗')} plain={chipRow} dimColor onPress={() => openPage($, row.url ?? '')} /> : null}
-            <Button key={`go:${row.id}`} label={name('⤴ Ask', '⤴')} variant="primary" onPress={() => investigate($, row)} />
-            {/* Shows the state, not the action: ✓ this one is read, ✗ it is
-                not. With its chrome on, so it reads as the box it stands for. */}
-            <Button key={`read:${row.id}`} label={row.read ? '✓' : '✗'} dimColor={row.read} onPress={() => markRead($, row.id, !row.read)} />
+          {/* All three keep their chrome and a space between them at any width.
+              Drawn bare with brackets of our own and no gap, as they were, a
+              narrow pane ran them into one another and into the real buttons. */}
+          <Box gap={1} flexShrink={0}>
+            {row.url ? <Button key={`link:${row.id}`} label={tight ? '⇗' : '⇗ Link'} dimColor onPress={() => openPage($, row.url ?? '')} /> : null}
+            {/* Ask never shrinks: it is the one action worth naming, and a bare
+                glyph says nothing about what it does. */}
+            <Button key={`go:${row.id}`} label="⤴ Ask" variant="primary" onPress={() => investigate($, row)} />
+            {/* A checkbox, and nothing else: empty while the event is unread,
+                ticked once it is, dim once there is nothing left to do with it.
+                The label cannot change under the pointer (a hover restyles an
+                element or reveals a hidden one, it never swaps one for
+                another), so the state lives in the box itself. */}
+            <Button key={`read:${row.id}`} label={row.read ? '✓' : ' '} dimColor={row.read} onPress={() => markRead($, row.id, !row.read)} />
           </Box>
         </Box>
         {/* The message's first line, under the title: for a deploy or a CI run

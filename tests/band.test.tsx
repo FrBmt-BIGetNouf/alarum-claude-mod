@@ -284,20 +284,40 @@ test('a row opens on what it carries, and only then', async ($, on) => {
   expect(await text(ui)).not.toContain('see the log for the stack')
 })
 
-test('the read mark shows the state, toggles both ways, and tells the API', async ($, on) => {
+test('the read mark toggles both ways, and tells the API', async ($, on) => {
   const { writes } = repo(on, () => [event({ id: 'e1' })])
   await $.session.start({ cwd: '/repo/sub', surface: 'terminal', isInteractive: true })
 
   const ui = await $.ui.mount({ plugin: 'alarum', surface: 'terminal', component: 'Pane', requestId: 'alarum', props: PANE })
-  expect(await text(ui)).toContain('✗') // unread
+  // An empty box while the event is unread; the tick appears when it is read.
+  const box = async () => (await ui.find({ key: 'read:e1' }))?.text?.trim()
+  expect(await box()).toBe('')
 
   await ui.press({ key: 'read:e1' })
   expect(writes[0]).toBe('POST /events/e1/read')
-  expect(await text(ui)).toContain('✓')
+  expect(await box()).toBe('✓')
 
   await ui.press({ key: 'read:e1' })
   expect(writes[1]).toBe('DELETE /events/e1/read')
-  expect(await text(ui)).toContain('✗')
+  expect(await box()).toBe('')
+})
+
+test('the row keeps its buttons whole however narrow the pane', async ($, on) => {
+  repo(on, () => [event({ id: 'e1', url: 'https://github.com/x/y/actions/runs/1' })])
+  await $.session.start({ cwd: '/repo/sub', surface: 'terminal', isInteractive: true })
+
+  // Narrow enough that the labels used to collapse into bare glyphs jammed
+  // against each other, which read as a mess beside the real buttons.
+  const ui = await $.ui.mount({
+    plugin: 'alarum', surface: 'terminal', component: 'Pane', requestId: 'alarum',
+    props: { ...PANE, bodyColumns: 64 },
+  })
+  const drawn = await text(ui)
+  expect(drawn).toContain('⤴ Ask') // Ask is named at any width
+  expect(drawn).toContain('⇗')     // the link shrinks to its glyph, and keeps its chrome
+  expect(drawn).not.toContain('⇗ Link')
+  expect(await ui.find({ key: 'link:e1' })).toBeDefined()
+  expect(await ui.find({ key: 'read:e1' })).toBeDefined()
 })
 
 test('Mark all marks the scope, in one call', async ($, on) => {
