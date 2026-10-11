@@ -1,0 +1,12 @@
+{
+  "name": "alarum",
+  "description": "The Alarum mod for Claude Code: your events where you work",
+  "owner": { "name": "Bleh", "url": "https://alarum.me" },
+  "plugins": [
+    {
+      "name": "alarum",
+      "source": "./",
+      "description": "Your Alarum events live in Claude Code: what arrives while you work, in a band above the prompt or a side pane, one press to hand an event to the agent"
+    }
+  ]
+}
