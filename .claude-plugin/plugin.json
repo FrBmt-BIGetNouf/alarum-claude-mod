@@ -1,7 +1,7 @@
 {
   "name": "alarum",
-  "version": "1.0.0",
-  "description": "Your Alarum events live in Claude Code: what arrives while you work, in a band above the prompt or a side pane, one press to hand an event to the agent",
+  "version": "1.0.1",
+  "description": "Your Alarum events above Claude Code's prompt: what just arrived, and one press to hand it to the agent.",
   "author": { "name": "Bleh", "url": "https://alarum.me" },
   "homepage": "https://alarum.me/docs",
   "repository": "https://github.com/FrBmt-BIGetNouf/alarum-claude-mod",

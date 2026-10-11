@@ -65,16 +65,6 @@ can reach.
   window is filed under a hash of the token, never the token
 - No `.alarum` in the repo means no pane and no request at all
 
-## Development
-
-This repository is published from the Alarum app's repository
-(`public/agent-kit/claude-mod/`); changes go there. Check with:
-
-```
-claude plugin validate .
-claude plugin test .
-```
-
 ## License
 
 MIT, see [LICENSE](LICENSE).

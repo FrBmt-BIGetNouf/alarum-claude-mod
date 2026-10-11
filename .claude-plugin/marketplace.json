@@ -6,7 +6,7 @@
     {
       "name": "alarum",
       "source": "./",
-      "description": "Your Alarum events live in Claude Code: what arrives while you work, in a band above the prompt or a side pane, one press to hand an event to the agent"
+      "description": "Your Alarum events above Claude Code's prompt: what just arrived, and one press to hand it to the agent."
     }
   ]
 }
