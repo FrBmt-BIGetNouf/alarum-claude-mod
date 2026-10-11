@@ -25,14 +25,16 @@ fetches it, the others draw what it left.
 
 ## Install
 
-In Claude Code:
-
-```
-/plugin marketplace add FrBmt-BIGetNouf/alarum-claude-mod
-/plugin install alarum@alarum
+```sh
+claude plugin marketplace add FrBmt-BIGetNouf/alarum-claude-mod && claude plugin install alarum@alarum
 ```
 
-Claude Code keeps it up to date.
+To move to a newer version, refresh the catalogue and update, then restart
+Claude Code:
+
+```sh
+claude plugin marketplace update alarum && claude plugin update alarum@alarum
+```
 
 ## Requirements
 
