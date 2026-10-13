@@ -607,3 +607,27 @@ test('the project named in .alarum is what the pane opens on', async ($, on) => 
   const ui = await $.ui.mount({ plugin: 'alarum', surface: 'terminal', component: 'Pane', requestId: 'alarum', props: PANE })
   expect(await text(ui)).toContain('Floatee')
 })
+
+test('the pane tab counts what the filters leave unread', async ($, on) => {
+  repo(on, () => [
+    event({ id: 'e1', level: 'error', title: 'Deploy failed', receivedAt: 300 }),
+    event({ id: 'e2', level: 'info', title: 'Build queued', receivedAt: 290 }),
+    event({ id: 'e3', level: 'success', title: 'Deploy OK', read: true, receivedAt: 280 }),
+  ])
+  // The tab as the surface holds it: an open on an id already open retitles it.
+  let tab = 'Alarum'
+  on('ui.panes', () => ({ value: [{ id: 'alarum', title: tab, isShown: true, isFocused: false, isPlaced: true }] }))
+  on('ui.open', (_$, e) => { tab = e.title ?? e.id; return { value: { isPlaced: true } } })
+
+  await $.session.start({ cwd: '/repo/sub', surface: 'terminal', isInteractive: true })
+  expect(tab).toBe('Alarum (2)')
+
+  const ui = await $.ui.mount({ plugin: 'alarum', surface: 'terminal', component: 'Pane', requestId: 'alarum', props: PANE })
+  // A level turned off leaves the count as it leaves the list.
+  await ui.press({ key: 'level:info' })
+  expect(tab).toBe('Alarum (1)')
+
+  // Nothing unread left: the tab is the name alone again.
+  await ui.press({ key: 'read:e1' })
+  expect(tab).toBe('Alarum')
+})

@@ -7,6 +7,7 @@ session runs, without leaving the terminal for the inbox.
 count per level, and takes nothing else. **A side pane** does the work:
 
 - every event of the account, newest first, with its level, project, source and age
+- its tab counts what the filters leave unread: `Alarum (3)`, and `Alarum` at zero
 - **⤴ Ask** drops an event into the prompt box, unsent, so a failed deploy
   becomes the next thing you ask about
 - the title opens the event's page in Alarum; **⇗ Link** opens whatever the

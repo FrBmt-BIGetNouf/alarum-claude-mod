@@ -1,6 +1,6 @@
 {
   "name": "alarum",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Your Alarum events above Claude Code's prompt: what just arrived, and one press to hand it to the agent.",
   "author": { "name": "Bleh", "url": "https://alarum.me" },
   "homepage": "https://alarum.me/docs",

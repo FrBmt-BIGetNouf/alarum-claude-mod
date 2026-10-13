@@ -300,6 +300,7 @@ async function hold($: EngineInterface, list: AlarumEvent[]) {
   await update($, seenUpTo, prev => (newest > prev ? newest : prev))
   await update($, events, () => list)
   await update($, error, () => null)
+  await syncPaneTitle($)
 }
 
 /**
@@ -349,9 +350,11 @@ async function invalidate($: EngineInterface) {
 async function markRead($: EngineInterface, id: string, next: boolean) {
   // Drawn at once, then confirmed: a tick that waits for the network feels broken.
   await update($, events, list => list.map(e => (e.id === id ? { ...e, read: next } : e)))
+  await syncPaneTitle($)
   const answer = await call($, `/events/${encodeURIComponent(id)}/read`, { method: next ? 'POST' : 'DELETE' })
   if (!answer) {
     await update($, events, list => list.map(e => (e.id === id ? { ...e, read: !next } : e)))
+    await syncPaneTitle($)
     return
   }
   await invalidate($)
@@ -364,6 +367,7 @@ async function markAllRead($: EngineInterface) {
   const answer = await call($, '/events/read-all', { method: 'POST', body })
   if (!answer) { $.ui.toast('Alarum: could not mark them read'); return }
   await update($, events, list => list.map(e => (inScope([e], where).length ? { ...e, read: true } : e)))
+  await syncPaneTitle($)
   await invalidate($)
   await loadScopes($, { force: true })
 }
@@ -373,6 +377,7 @@ async function setScope($: EngineInterface, next: Scope) {
   await update($, isPickingScope, () => false)
   await update($, selected, () => null)
   await remember($, 'scope', next)
+  await syncPaneTitle($)
   // No refetch: the window held covers every project, so a new scope is a new
   // filter over what is already here.
 }
@@ -389,6 +394,7 @@ async function toggleLevel($: EngineInterface, level: Level) {
   const ordered = LEVELS.filter(l => next.includes(l))
   await update($, levels, () => ordered)
   await remember($, 'levels', ordered)
+  await syncPaneTitle($)
 }
 
 async function toggleUnread($: EngineInterface) {
@@ -427,10 +433,39 @@ async function openPage($: EngineInterface, url: string) {
   $.ui.toast(`Alarum: could not open a browser for ${url}`)
 }
 
-/** everything → warn → error → critical → everything. */
+/** Which of the two the mod draws into, kept for the next session of this repo. */
 async function saveLayout($: EngineInterface, next: 'band' | 'pane') {
   await update($, layout, () => next)
   await remember($, 'layout', next)
+}
+
+/**
+ * The pane's tab: `Alarum`, or `Alarum (3)` while three events the filters
+ * leave are unread. The tab is all that is left of the mod when another
+ * plugin's pane is in front, so the count belongs there.
+ *
+ * Counted like the band's counters: events, not the rows a burst folds into,
+ * and under the scope and the levels in force, which is what is being looked at.
+ */
+async function paneTitle($: EngineInterface): Promise<string> {
+  const where = await read($, scope)
+  const unread = visible(inScope(await read($, events), where), await read($, levels), true).length
+  return unread ? `Alarum (${unread})` : 'Alarum'
+}
+
+/**
+ * Deliver that title, if it changed.
+ *
+ * Opening an id already open retitles it in place, so this is the whole of it.
+ * Called from what moves the count, never from drawing: a render hook may not
+ * write, and a retitle would redraw what is drawing.
+ */
+async function syncPaneTitle($: EngineInterface) {
+  const open = (await $.ui.panes().catch(() => [])).find(p => p.id === PANE)
+  if (!open) return
+  const title = await paneTitle($)
+  if (open.title === title) return
+  await $.ui.open({ id: PANE, title }).catch(() => undefined)
 }
 
 async function toggleLayout($: EngineInterface) {
@@ -440,7 +475,7 @@ async function toggleLayout($: EngineInterface) {
     return
   }
   await saveLayout($, 'pane')
-  await $.ui.open({ id: PANE, title: 'Alarum' }).catch(() => undefined)
+  await $.ui.open({ id: PANE, title: await paneTitle($) }).catch(() => undefined)
 }
 
 // ── Drawing ─────────────────────────────────────────────────────────────────
